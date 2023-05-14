@@ -1,0 +1,81 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_EDGES 1000
+
+// Data structure to represent an edge in the graph
+struct Edge {
+    int src, dest, weight;
+};
+
+// Data structure to represent a graph
+struct Graph {
+    int V, E;
+    struct Edge edges[MAX_EDGES];
+};
+
+// Function to create a graph with V vertices and E edges
+struct Graph* createGraph(int V, int E) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->V = V;
+    graph->E = E;
+    return graph;
+}
+
+// Function to find the parent of a node in the union-find data structure
+int find(int parent[], int i) {
+    if (parent[i] == -1)
+        return i;
+    return find(parent, parent[i]);
+}
+
+// Function to perform union operation in the union-find data structure
+void unionSet(int parent[], int x, int y) {
+    int xset = find(parent, x);
+    int yset = find(parent, y);
+    parent[xset] = yset;
+}
+
+// Function to compare two edges based on their weight
+int compare(const void* a, const void* b) {
+    struct Edge* edge1 = (struct Edge*)a;
+    struct Edge* edge2 = (struct Edge*)b;
+    return edge1->weight - edge2->weight;
+}
+
+// Function to perform Kruskal's algorithm to find the Minimum Spanning Tree of a graph
+void kruskalMST(struct Graph* graph) {
+    int parent[graph->V];
+    memset(parent, -1, sizeof(parent));
+    int i = 0, j = 0;
+    struct Edge result[graph->V];
+    qsort(graph->edges, graph->E, sizeof(graph->edges[0]), compare);
+    while (i < graph->V - 1 && j < graph->E) {
+        struct Edge next_edge = graph->edges[j++];
+        int x = find(parent, next_edge.src);
+        int y = find(parent, next_edge.dest);
+        if (x != y) {
+            result[i++] = next_edge;
+            unionSet(parent, x, y);
+        }
+    }
+    printf("Minimum Spanning Tree:\n");
+    for (i = 0; i < graph->V - 1; i++)
+        printf("(%d, %d) -> %d\n", result[i].src, result[i].dest, result[i].weight);
+}
+
+// Driver code
+int main() {
+    int V, E, i;
+    printf("Enter the number of vertices in the graph: ");
+    scanf("%d", &V);
+    printf("Enter the number of edges in the graph: ");
+    scanf("%d", &E);
+    struct Graph* graph = createGraph(V, E);
+    for (i = 0; i < E; i++) {
+        printf("Enter the details of edge %d (source, destination, weight): ", i + 1);
+        scanf("%d %d %d", &graph->edges[i].src, &graph->edges[i].dest, &graph->edges[i].weight);
+    }
+    kruskalMST(graph);
+    return 0;
+}
