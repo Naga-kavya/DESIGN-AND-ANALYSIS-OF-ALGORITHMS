@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+// Function to find the optimal binary search tree using dynamic programming
+int optimalBST(int keys[], int freq[], int n) {
+    // Create a 2D table to store the minimum cost of each subtree
+    int cost[n][n];
+    // Initialize the table to -1
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cost[i][j] = -1;
+        }
+    }
+    // Fill the diagonal elements of the table with the frequency of each key
+    for (int i = 0; i < n; i++) {
+        cost[i][i] = freq[i];
+    }
+    // Fill the table diagonally from bottom to top
+    for (int L = 2; L <= n; L++) {
+        for (int i = 0; i <= n - L + 1; i++) {
+            int j = i + L - 1;
+            cost[i][j] = INT_MAX;
+            // Find the optimal root for the subtree
+            for (int r = i; r <= j; r++) {
+                int c = ((r > i) ? cost[i][r - 1] : 0) + ((r < j) ? cost[r + 1][j] : 0) + sum(freq, i, j);
+                if (c < cost[i][j]) {
+                    cost[i][j] = c;
+                }
+            }
+        }
+    }
+    return cost[0][n - 1];
+}
+
+// Function to calculate the sum of frequencies of keys from index i to j
+int sum(int freq[], int i, int j) {
+    int s = 0;
+    for (int k = i; k <= j; k++) {
+        s += freq[k];
+    }
+    return s;
+}
+
+// Driver code
+int main() {
+    int n;
+    printf("Enter the number of keys: ");
+    scanf("%d", &n);
+    int keys[n], freq[n];
+    for (int i = 0; i < n; i++) {
+        printf("Enter the key and frequency for node %d: ", i + 1);
+        scanf("%d %d", &keys[i], &freq[i]);
+    }
+    int cost = optimalBST(keys, freq, n);
+    printf("The minimum cost of an optimal binary search tree is %d\n", cost);
+    return 0;
+}
